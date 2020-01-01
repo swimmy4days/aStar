@@ -1,28 +1,30 @@
 import pygame
 import tkinter as tk
+from random import randint
+from math import sqrt
 
 
 class Node(object):
     """docstring for Node"""
 
-    def __init__(self, parent=None, pos=None, goal=None):
+    def __init__(self, parent=None, pos=None, goal=None, biggerN=1):
         super(Node, self).__init__()
         self.goal = goal
         self.parent = parent
         self.position = pos
-        self.n = 1
+        self.n = biggerN
         self.f = 0
         self.child = []
         if self.parent:
-            self.n = parent.n + 1
-        self.f = self.n + self.distance(self, self.goal)
+            self.n = parent.n + biggerN
+        self.f = float(self.n + self.distance(self, self.goal))
 
-    def __eq__(this, other):
-        return int(this.position[0]) == int(other.position[0]) and int(this.position[1]) == int(other.position[1])
+    def __eq__(self, other):
+        return int(self.position[0]) == int(other.position[0]) and int(self.position[1]) == int(other.position[1])
 
     @staticmethod
-    def distance(this, goal):
-        return ((int(this.position[0])-int(goal[0]))**2)+((int(this.position[1])-int(goal[1]))**2)
+    def distance(self, goal):
+        return sqrt(((int(self.position[0])-int(goal[0]))**2)+((int(self.position[1])-int(goal[1]))**2))
 
 
 def aStar(grid, start, end):
@@ -30,7 +32,6 @@ def aStar(grid, start, end):
     closedList = []
     visited = []
     newPos = None
-    newNode = None
     path = []
 
     if start == end:
@@ -51,7 +52,10 @@ def aStar(grid, start, end):
                 continue
 
             if newPos not in visited:
-                openedList.append(Node(currentNode, newPos, currentNode.goal))
+                if abs(x) == abs(y):
+                    openedList.append(Node(currentNode, newPos, currentNode.goal, 1))
+                else:
+                    openedList.append(Node(currentNode, newPos, currentNode.goal))
                 visited.append(newPos)
 
         openedList.sort(key=lambda x: x.f)
@@ -61,18 +65,20 @@ def aStar(grid, start, end):
         else:
             return -1
 
+    f = currentNode.f
     try:
         while True:
             path.append(currentNode.position)
             currentNode = currentNode.parent
-    except Exception as e:
+    except Exception:
+        print("Done: " + str(f))
         return path[::-1]
 
 
 # Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-GRAY = (200, 200, 200)
+GRAY = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 PINK = (255, 20, 147)
@@ -189,7 +195,7 @@ while not done:
                     path = []
 
                     if start == end:
-                        print("start = end!")
+                        print("Done: 0 (start = end)")
                         grid[start.position[0]][start.position[1]] = 5
                         found = True
                         run = False
@@ -200,8 +206,8 @@ while not done:
                     firstRun = False
                 if currentNode == end:
                     found = True
+                    print("Done: " + str(currentNode.f))
                     continue
-                draw = True
                 for x, y in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
                     newPos = [int(currentNode.position[0]) + x, int(currentNode.position[1]) + y]
                     if newPos[0] > (len(grid) - 1) or newPos[0] < 0 or newPos[1] > (len(grid[len(grid)-1]) - 1) or newPos[1] < 0:
@@ -210,8 +216,12 @@ while not done:
                         continue
 
                     if newPos not in visited:
+                        # if grid[newPos[0]][newPos[1]] != currentNode.position:
                         grid[newPos[0]][newPos[1]] = 4
-                        openedList.append(Node(currentNode, newPos, currentNode.goal))
+                        if abs(x) == abs(y):
+                            openedList.append(Node(currentNode, newPos, currentNode.goal, 1))
+                        else:
+                            openedList.append(Node(currentNode, newPos, currentNode.goal))
                         visited.append(newPos)
 
                 openedList.sort(key=lambda x: x.f)
@@ -264,9 +274,9 @@ while not done:
         endPos = tk.StringVar()
         steps = tk.IntVar()
 
-        startPos.set("0, 0")
-        endPos.set("5, 5")
-        steps.set(0)
+        startPos.set(str(randint(0, GRID_X - 1)) + ", " + str(randint(0, GRID_Y - 1)))
+        endPos.set(str(randint(0, GRID_X - 1)) + ", " + str(randint(0, GRID_Y - 1)))
+        steps.set(1)
 
         e1 = tk.Entry(master, textvariable=startPos)
         e2 = tk.Entry(master, textvariable=endPos)

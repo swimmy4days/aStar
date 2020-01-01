@@ -1,24 +1,24 @@
 class Node(object):
     """docstring for Node"""
 
-    def __init__(self, parent=None, pos=None, goal=None):
+    def __init__(self, parent=None, pos=None, goal=None, biggerN=1):
         super(Node, self).__init__()
         self.goal = goal
         self.parent = parent
         self.position = pos
-        self.n = 1
+        self.n = biggerN
         self.f = 0
         self.child = []
         if self.parent:
             self.n = parent.n + 1
         self.f = self.n + self.distance(self, self.goal)
 
-    def __eq__(this, other):
-        return this.position == other.position
+    def __eq__(self, other):
+        return self.position == other.position
 
     @staticmethod
-    def distance(this, goal):
-        return ((this.position[0]-goal[0])**2)+((this.position[1]-goal[1])**2)
+    def distance(self, goal):
+        return ((self.position[0]-goal[0])**2)+((self.position[1]-goal[1])**2)
 
 
 def aStar(grid, start, end):
@@ -26,7 +26,6 @@ def aStar(grid, start, end):
     closedList = []
     visited = []
     newPos = None
-    newNode = None
     path = []
 
     if start == end:
@@ -47,7 +46,10 @@ def aStar(grid, start, end):
                 continue
 
             if newPos not in visited:
-                openedList.append(Node(currentNode, newPos, currentNode.goal))
+                if abs(x) == abs(y):
+                    openedList.append(Node(currentNode, newPos, currentNode.goal, 1.4))
+                else:
+                    openedList.append(Node(currentNode, newPos, currentNode.goal))
                 visited.append(newPos)
 
         openedList.sort(key=lambda x: x.f)
@@ -61,7 +63,7 @@ def aStar(grid, start, end):
         while True:
             path.append(currentNode.position)
             currentNode = currentNode.parent
-    except Exception as e:
+    except Exception:
         return path[::-1]
 
 
